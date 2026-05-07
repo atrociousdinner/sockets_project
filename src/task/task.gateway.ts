@@ -125,7 +125,7 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('task:create')
-  handletaskCreation(
+  async handletaskCreation(
     @MessageBody() dto: CreateTaskDto,
     @ConnectedSocket() client: Socket,
   ) {
@@ -141,7 +141,7 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const userId = Number(client.data.userId);
       const roomId = Number(client.data.roomId);
 
-      this.tasksService.create(dto, userId, roomId);
+      await this.tasksService.create(dto, userId, roomId);
 
       client.to(room[0]).emit('task:create', {
         ...dto,

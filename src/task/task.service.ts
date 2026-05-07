@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task, TaskStatus } from './task.entity';
 import { IsNull, Repository } from 'typeorm';
@@ -8,8 +8,8 @@ import { CreateTaskDto } from './dtos/create-task.dto';
 export class TaskService {
   constructor(@InjectRepository(Task) private taskRepo: Repository<Task>) {}
 
-  create(dto: CreateTaskDto, userId: number, roomId: number) {
-    const task = this.taskRepo.create({
+  async create(dto: CreateTaskDto, userId: number, roomId: number) {
+    const task = await this.taskRepo.create({
       ...dto,
       user: { user_id: userId },
       room: { room_id: roomId },
@@ -36,23 +36,31 @@ export class TaskService {
     });
   }
 
-  async attempt(taskId: number, userId: number){
+  async attempt(taskId: number, userId: number) {
+    const task = await this.taskRepo.findOne({
+      where: { task_id: taskId },
+      relations: ['assignee'],
+    });
+
+    if (!task) {
+      throw new NotFoundException(`Task ${taskId} not found`);
+    }
+
+    if (!task.assignee || task.assignee.user_id !== userId) {
+      throw new UnauthorizedException('Only the assignee can attempt this task');
+    }
 
     const random = Math.random() < 0.5;
     const status = random ? TaskStatus.COMPLETED : TaskStatus.FAILED;
 
-    await this.taskRepo.update({
-      task_id: taskId,
-      status: TaskStatus.PENDING,
-      assignee: { user_id: userId },
-    }, {
-      status
-    })
+    await this.taskRepo.update(
+      { task_id: taskId },
+      { status },
+    );
 
     return this.taskRepo.findOne({
       where: { task_id: taskId },
     });
-
   }
 
 }
