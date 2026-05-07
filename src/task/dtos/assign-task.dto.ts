@@ -1,9 +1,8 @@
-import { IsEnum, IsNotEmpty, IsString } from "class-validator";
-import { Task, TaskStatus } from "../task.entity";
+import { IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 
 export class AssignTaskDto{
-    @IsString()
+    @IsNumber()
     @IsNotEmpty()
-    taskId: string
+    taskId: number
 }

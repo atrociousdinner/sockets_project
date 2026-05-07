@@ -1,19 +1,24 @@
-import { Room } from "src/room/room.entity";
-import { Task } from "src/task/task.entity";
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from "typeorm";
+import { Room } from 'src/room/room.entity';
+import { Task } from 'src/task/task.entity';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 
 @Entity()
 export class User {
-    @PrimaryGeneratedColumn()
-    user_id: number;
+  @PrimaryGeneratedColumn()
+  user_id: number;
 
-    @Column()
-    user_name: string;
+  @Column()
+  user_name: string;
 
-    @ManyToOne(() => Room, (room) => room.users)
-    room: Room;
+  @ManyToOne(() => Room, (room) => room.users, { onDelete: 'CASCADE' })
+  room: Room;
 
-    @OneToMany(() => Task, (task) => task.user)
-    tasks: Task[];
-
+  @OneToMany(() => Task, (task) => task.user)
+  tasks: Task[];
 }

@@ -11,4 +11,8 @@ export class UserService {
     const user = this.userRepo.create({ user_name });
     return this.userRepo.save(user);
   }
+
+  delete(user_id: number) {
+    return this.userRepo.delete(user_id);
+  }
 }

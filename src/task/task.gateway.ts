@@ -48,7 +48,7 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    client.data.userId = userId;
+    client.data.userId = Number(userId);
 
     console.log(`Socket ${client.id} linked to User ${userId}`);
   }
@@ -64,26 +64,27 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     // console.log('joinRoom event received for room:', roomId);
     const userId = client.data.userId;
-    client.data.roomId = roomId;
+    const numericRoomId = Number(roomId);
+    client.data.roomId = numericRoomId;
 
     try {
-      const isAuthorized = await this.roomsService.isUserInRoom(userId, roomId);
-      // console.log(`Authorization status: `, isAuthorized);
+      const isAuthorized = await this.roomsService.isUserInRoom(userId, numericRoomId);
+      console.log(`Authorization status: `, isAuthorized);
 
       if (!isAuthorized) {
         throw new UnauthorizedException(`Not authorized to enter the room`);
       }
 
-      client.join(roomId);
-      console.log(`User ID: ${userId} has joined the room ${roomId}`);
+      client.join(String(numericRoomId));
+      console.log(`User ID: ${userId} has joined the room ${numericRoomId}`);
 
-      client.to(roomId).emit('userJoined', {
+      client.to(String(numericRoomId)).emit('userJoined', {
         userId: client.id,
-        roomId,
+        roomId: numericRoomId,
       });
 
       return {
-        joined: roomId,
+        joined: numericRoomId,
       };
     } catch (error) {
       console.error(`CRASH in handleJoinRoom:`, error.message);
@@ -96,10 +97,11 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() roomId: string,
     @ConnectedSocket() client: Socket,
   ) {
-    client.leave(roomId);
-    client.to(roomId).emit('userLeft', { userId: client.id });
+    const numericRoomId = Number(roomId);
+    client.leave(String(numericRoomId));
+    client.to(String(numericRoomId)).emit('userLeft', { userId: client.id });
 
-    return { left: roomId };
+    return { left: numericRoomId };
   }
 
   @SubscribeMessage('roomMessage')
@@ -136,8 +138,8 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
         );
       }
 
-      const userId = client.data.userId;
-      const roomId = client.data.roomId;
+      const userId = Number(client.data.userId);
+      const roomId = Number(client.data.roomId);
 
       this.tasksService.create(dto, userId, roomId);
 
@@ -163,9 +165,10 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const room = [...client.rooms].filter((room) => room !== client.id);
 
     try {
-      const userId = client.data.userId;
+      const userId = Number(client.data.userId);
+      const taskId = Number(dto.taskId);
 
-      const assignedTask = await this.tasksService.assign(dto.taskId, userId);
+      const assignedTask = await this.tasksService.assign(taskId, userId);
 
       if (room.length > 0) {
         client.to(room[0]).emit('task:assigned', assignedTask);
@@ -181,4 +184,36 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+
+  @SubscribeMessage('task:attempt')
+  async handletaskAttempt(
+    @MessageBody() dto: AssignTaskDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const room = [...client.rooms].filter((room) => room !== client.id);
+
+    try {
+      const userId = Number(client.data.userId);
+      const taskId = Number(dto.taskId);
+
+      const attemptedTask = await this.tasksService.attempt(taskId, userId);
+
+      if (room.length > 0) {
+        client.to(room[0]).emit('task:attempted', attemptedTask);
+      }
+
+      return {
+        task_attempted: true,
+        task: attemptedTask,
+      };
+    } catch (error) {
+      console.error(`Error in attempting task:`, error);
+      return { error: error.message };
+    }
+  }
+
 }
+
+
+
+

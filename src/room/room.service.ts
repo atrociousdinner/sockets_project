@@ -20,7 +20,7 @@ export class RoomService {
     return this.roomRepo.save(room);
   }
 
-  async join(room_name: string, room_password: string, userId: string) {
+  async join(room_name: string, room_password: string, userId: number) {
     const room = await this.roomRepo.findOne({
       where: { room_name: room_name },
     });
@@ -38,14 +38,21 @@ export class RoomService {
     });
   }
 
-  async isUserInRoom(userId: string, roomId: string) {
-    const user_id = Number(userId);
-    const room_id = Number(roomId);
+  async isUserInRoom(userId: number, roomId: number) {
     const user = await this.userRepo.findOne({
-      where: { user_id: user_id },
+      where: { user_id: userId },
       relations: ['room'],
     });
 
-    return user?.room.room_id === room_id;
+    return user?.room?.room_id === roomId;
+  }
+
+  async delete(room_id: number) {
+    const result = await this.roomRepo.delete(room_id);
+
+    return {
+      success: true,
+      message: `Room ${room_id} successfully deleted`,
+    };
   }
 }
