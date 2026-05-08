@@ -1,5 +1,6 @@
 import { Task } from 'src/task/task.entity';
 import { User } from 'src/user/user.entity';
+import { Auction } from 'src/auction/auction.entity';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 @Entity()
@@ -18,4 +19,7 @@ export class Room {
 
   @OneToMany(() => Task, (task) => task.room)
   tasks: Task[];
+
+  @OneToMany(() => Auction, (auction) => auction.room)
+  auctions: Auction[]
 }

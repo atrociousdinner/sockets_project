@@ -1,3 +1,4 @@
+import { Bid } from 'src/bid/bid.entity';
 import { Room } from 'src/room/room.entity';
 import { Task } from 'src/task/task.entity';
 import {
@@ -21,4 +22,7 @@ export class User {
 
   @OneToMany(() => Task, (task) => task.user)
   tasks: Task[];
+
+  @OneToMany(() => Bid, (bid) => bid.user)
+  bids: Bid[];
 }
