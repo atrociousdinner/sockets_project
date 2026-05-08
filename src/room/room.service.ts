@@ -48,7 +48,7 @@ export class RoomService {
   }
 
   async delete(room_id: number) {
-    const result = await this.roomRepo.delete(room_id);
+     await this.roomRepo.delete(room_id);
 
     return {
       success: true,

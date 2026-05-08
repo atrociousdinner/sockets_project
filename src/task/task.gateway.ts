@@ -68,7 +68,10 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.data.roomId = numericRoomId;
 
     try {
-      const isAuthorized = await this.roomsService.isUserInRoom(userId, numericRoomId);
+      const isAuthorized = await this.roomsService.isUserInRoom(
+        userId,
+        numericRoomId,
+      );
       console.log(`Authorization status: `, isAuthorized);
 
       if (!isAuthorized) {
@@ -132,12 +135,6 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const room = [...client.rooms].filter((room) => room !== client.id);
 
     try {
-      if (room.length != 1) {
-        throw new UnauthorizedException(
-          'You can only join one room at a time!',
-        );
-      }
-
       const userId = Number(client.data.userId);
       const roomId = Number(client.data.roomId);
 
@@ -170,9 +167,7 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const assignedTask = await this.tasksService.assign(taskId, userId);
 
-      if (room.length > 0) {
-        client.to(room[0]).emit('task:assigned', assignedTask);
-      }
+      client.to(room[0]).emit('task:assigned', assignedTask);
 
       return {
         task_assigned: true,
@@ -183,7 +178,6 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return { error: error.message };
     }
   }
-
 
   @SubscribeMessage('task:attempt')
   async handletaskAttempt(
@@ -197,10 +191,7 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const taskId = Number(dto.taskId);
 
       const attemptedTask = await this.tasksService.attempt(taskId, userId);
-
-      if (room.length > 0) {
-        client.to(room[0]).emit('task:attempted', attemptedTask);
-      }
+      client.to(room[0]).emit('task:attempted', attemptedTask);
 
       return {
         task_attempted: true,
@@ -211,9 +202,4 @@ export class TaskGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return { error: error.message };
     }
   }
-
 }
-
-
-
-

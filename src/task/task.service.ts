@@ -19,6 +19,17 @@ export class TaskService {
   }
 
   async assign(taskId: number, userId: number) {
+
+
+    const task = await this.taskRepo.findOne({
+      where: {task_id: taskId},
+      relations: ['user']
+    })
+
+    if(!task){
+      throw new NotFoundException(`Task ${taskId} not found`)
+    }
+
      await this.taskRepo.update(
       {
         task_id: taskId,
