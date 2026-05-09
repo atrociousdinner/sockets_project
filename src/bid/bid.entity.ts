@@ -23,10 +23,4 @@ export class Bid {
   @CreateDateColumn()
   createdAt: Date;
 
-
-
-  
-
-//   @Column()
-//   parentBid: number;
 }

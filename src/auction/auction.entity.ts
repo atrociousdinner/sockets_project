@@ -1,26 +1,31 @@
-
 import { Bid } from 'src/bid/bid.entity';
 import { Room } from 'src/room/room.entity';
-import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  OneToMany,
+  CreateDateColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 export enum AuctionStatus {
-    DRAFT = 'draft',
-    ACTIVE = 'active',
-    CLOSED = 'closed'
+  DRAFT = 'draft',
+  ACTIVE = 'active',
+  CLOSED = 'closed',
 }
-
 
 @Entity()
 export class Auction {
-  @PrimaryColumn()
-  auction_id: string;
+  @PrimaryGeneratedColumn()
+  auction_id: number;
 
   @Column()
   title: string;
 
   @Column({
     type: 'varchar',
-    default: AuctionStatus.DRAFT
+    default: AuctionStatus.DRAFT,
   })
   status: AuctionStatus;
 
@@ -30,17 +35,18 @@ export class Auction {
   @Column()
   current_price: number;
 
-  @ManyToOne(() => Room, (room) => room.auctions, {onDelete: 'CASCADE'})
+  @ManyToOne(() => Room, (room) => room.auctions, { onDelete: 'CASCADE' })
   room: Room;
 
   @OneToMany(() => Bid, (bid) => bid.auction)
-  bids: Bid[]
+  bids: Bid[];
 
+  @CreateDateColumn()
+  createdAt: Date;
 
+  //   @OneToMany(() => User, (user) => user.room)
+  //   users: User[];
 
-//   @OneToMany(() => User, (user) => user.room)
-//   users: User[];
-
-//   @OneToMany(() => Task, (task) => task.room)
-//   tasks: Task[];
+  //   @OneToMany(() => Task, (task) => task.room)
+  //   tasks: Task[];
 }
