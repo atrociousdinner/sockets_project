@@ -1,21 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Bid } from './bid.entity';
 import { Auction } from 'src/auction/auction.entity';
 import { User } from 'src/user/user.entity';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class BidService {
   constructor(
     @InjectRepository(Bid) private bidRepo: Repository<Bid>,
     @InjectRepository(Auction) private auctionRepo: Repository<Auction>,
-    @InjectRepository(User) private userRepo: Repository<User>
+    @InjectRepository(User) private userRepo: Repository<User>,
+    private dataSource: DataSource
   ) {}
 
-  async placeBid(auction_id: number, user_id: number, bidAmount: number, parentBidId: number | null) {
+  async placeBid(auction_id: number, user_id: number, bidAmount: number, parentBidId: number) {
     const auction = await this.auctionRepo.findOne({
-        where: {auction_id: auction_id}
+        where: {auction_id}
     })
     
     if(!auction){
@@ -30,17 +32,78 @@ export class BidService {
         throw new NotFoundException(`The user ${user} doesn't exist`)
     }
 
-    if(!parentBidId){
+
+    if(bidAmount <= Number(auction.current_price)){
+      throw new ConflictException(`Bid amount must be higher than the current price`)
+    }
+
+    // let parentBid: Bid | null = null;
+
+    // if(parentBidId){
+    //   parentBid = await this.bidRepo.findOne({
+    //     where: {
+    //       bid_id: parentBidId,
+    //       auction: {auction_id}
+    //     },
+    //     relations: ['auction']
+    //   })
+
+    //       if(!parentBid){
+    // }
+
+    // }
+
+
+    const parentBid = await this.bidRepo.findOne({
+      where: {
+        bid_id: parentBidId,
+        auction: {auction_id}
+      },
+      relations: ['auction']
+    })
+
+    if (!parentBid) {
+            throw new NotFoundException(`Parent bid not found`)
 
     }
 
-    const bid = await this.bidRepo.create({
-        auction: {auction_id: auction_id},
-        bidder: {user_id: user_id},
-        amount: bidAmount,
-        parentBid: {bid_id: parentBidId}
-    })
+    try {
+      return await this.dataSource.transaction(async (manager) => {
+      
+        const bidRepo = manager.getRepository(Bid);
+        const auctionRepo = manager.getRepository(Auction);
+
+        const bid = bidRepo.create({
+          auction,
+          bidder: user,
+          amount: bidAmount,
+          parentBid
+        })
+
+        const savedBid = await bidRepo.save(bid)
+
+        auction.current_price = bidAmount;
+        await auctionRepo.save(auction)
+
+        return savedBid;
+
+      })
+    }
+
+    catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException(`You have been outbid`)
+      }
+
+
+    throw error;
+    }
+
 
   }
+
+
+  
+
 
 }

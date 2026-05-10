@@ -14,11 +14,11 @@ export class Room {
   @Column()
   room_password: string;
 
+  @OneToMany(() => Task, (task) => task.room)
+  tasks: Task[]
+
   @OneToMany(() => User, (user) => user.room)
   users: User[];
-
-  @OneToMany(() => Task, (task) => task.room)
-  tasks: Task[];
 
   @OneToMany(() => Auction, (auction) => auction.room)
   auctions: Auction[]

@@ -11,14 +11,17 @@ export class Bid {
   @ManyToOne(() => Auction, (auction) => auction.bids, { onDelete: 'CASCADE' })
   auction: Auction;
 
-  @ManyToOne(() => User, (user) => user.bids, {onDelete: 'CASCADE'})
-  bidder: User;
+  @ManyToOne(() => User, (user) => user.bids, { onDelete: 'CASCADE', nullable: true })
+  bidder: User | null;
 
   @Column({type: 'decimal', precision: 10, scale: 2})
   amount: number;
 
   @ManyToOne(() => Bid, {nullable: true})
   parentBid: Bid | null;
+
+  @Column({ default: false })
+  isOpeningBid: boolean;
 
   @CreateDateColumn()
   createdAt: Date;

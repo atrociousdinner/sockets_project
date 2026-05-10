@@ -10,12 +10,14 @@ import { Task } from './task/task.entity';
 import { Room } from './room/room.entity';
 import { AuctionModule } from './auction/auction.module';
 import { BidModule } from './bid/bid.module';
+import { Bid } from './bid/bid.entity';
+import { Auction } from './auction/auction.entity';
 
 @Module({
   imports: [TaskModule, UserModule, RoomModule, TypeOrmModule.forRoot({
     type: 'sqlite',
     database: 'db.sqlite',
-    entities: [User, Task, Room],
+    entities: [User, Task, Room, Bid, Auction],
     synchronize:true,
   }), AuctionModule, BidModule],
   controllers: [AppController],
