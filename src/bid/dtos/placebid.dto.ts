@@ -1,16 +1,17 @@
-import { IsNumber} from "class-validator";
+import { IsNumber, IsOptional } from 'class-validator';
 
+export class PlaceBidDto {
+  @IsNumber()
+  auction_id: number;
 
-export class PlaceBidDto{
-    @IsNumber()
-    auction_id: number;
+  @IsNumber()
+  @IsOptional()
+  user_id: number;
 
-    @IsNumber()
-    user_id: number;
+  @IsNumber()
+  bidAmount: number;
 
-    @IsNumber()
-    bidAmount: number;
-
-    @IsNumber()
-    parentBidId: number;
+  @IsNumber()
+  @IsOptional()
+  parentBidId: number;
 }

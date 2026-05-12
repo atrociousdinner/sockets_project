@@ -15,7 +15,8 @@ import {
 import { BidService } from './bid.service';
 import { Server, Socket } from 'socket.io';
 import { RoomService } from 'src/room/room.service';
-
+import { PlaceBidDto } from './dtos/placebid.dto';
+import { NotFoundException } from '@nestjs/common';
 @WebSocketGateway(3001, {
   cors: {
     origin: ['http://localhost:3000'],
@@ -30,7 +31,6 @@ import { RoomService } from 'src/room/room.service';
 export class BidGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private bidService: BidService,
-
     private roomService: RoomService,
   ) {}
 
@@ -76,6 +76,8 @@ export class BidGateway implements OnGatewayConnection, OnGatewayDisconnect {
           roomId,
         });
 
+      client.data.roomId = roomId;
+
       return {
         joined: 'successful',
       };
@@ -94,5 +96,42 @@ export class BidGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.to(String(roomId)).emit('userLeft', { userId: client.id });
 
     return { left: roomId };
+  }
+
+  @SubscribeMessage('placeBid')
+  async handlePlaceBid(
+    @MessageBody() bid: PlaceBidDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const user_id = client.data.userId;
+    const auction_id = bid.auction_id;
+    const latestBid = await this.bidService.getLatestBid(auction_id);
+
+    if (!latestBid) {
+      throw new NotFoundException(`Internal server error`);
+    }
+
+    try {
+      const placed_bid = await this.bidService.placeBid(
+        auction_id,
+        user_id,
+        bid.bidAmount,
+        latestBid?.bid_id,
+      );
+
+      this.server.to(String(client.data.roomId)).emit('bid:placed', {
+        placed_bid,
+      });
+
+      return {
+        success: 'true',
+        placed_bid,
+      };
+    } catch (err) {
+      return {
+        success: 'false',
+        err: err.message,
+      };
+    }
   }
 }
