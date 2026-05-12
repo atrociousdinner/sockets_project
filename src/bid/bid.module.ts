@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Bid } from './bid.entity';
 import { Auction } from 'src/auction/auction.entity';
 import { User } from 'src/user/user.entity';
+import { RoomModule } from 'src/room/room.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Bid, Auction, User])],
+  imports: [TypeOrmModule.forFeature([Bid, Auction, User]), RoomModule],
   controllers: [BidController],
-  providers: [BidService]
+  providers: [BidService],
 })
 export class BidModule {}
