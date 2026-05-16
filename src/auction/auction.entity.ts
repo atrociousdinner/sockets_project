@@ -44,6 +44,12 @@ export class Auction {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column({ type: 'datetime', nullable: true })
+  startedAt: Date;
+
+  @Column({ type: 'datetime', nullable: true })
+  endsAt: Date;
+
   //   @OneToMany(() => User, (user) => user.room)
   //   users: User[];
 

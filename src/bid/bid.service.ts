@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Bid } from './bid.entity';
-import { Auction } from 'src/auction/auction.entity';
+import { Auction, AuctionStatus } from 'src/auction/auction.entity';
 import { User } from 'src/user/user.entity';
 import { DataSource } from 'typeorm';
 
@@ -31,6 +31,14 @@ export class BidService {
 
     if (!auction) {
       throw new NotFoundException(`The auction ${auction} doesn't exist`);
+    }
+
+    if (auction.endsAt <= new Date()) {
+      throw new ConflictException(`Auction has ended.`);
+    }
+
+    if (auction.status !== AuctionStatus.ACTIVE) {
+      throw new ConflictException(`Auction is not active`);
     }
 
     const user = await this.userRepo.findOne({

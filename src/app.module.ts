@@ -12,15 +12,24 @@ import { AuctionModule } from './auction/auction.module';
 import { BidModule } from './bid/bid.module';
 import { Bid } from './bid/bid.entity';
 import { Auction } from './auction/auction.entity';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [TaskModule, UserModule, RoomModule, TypeOrmModule.forRoot({
-    type: 'sqlite',
-    database: 'db.sqlite',
-    entities: [User, Task, Room, Bid, Auction],
-    synchronize:true,
-  }), AuctionModule, BidModule],
+  imports: [
+    TaskModule,
+    UserModule,
+    RoomModule,
+    TypeOrmModule.forRoot({
+      type: 'sqlite',
+      database: 'db.sqlite',
+      entities: [User, Task, Room, Bid, Auction],
+      synchronize: true,
+    }),
+    AuctionModule,
+    BidModule,
+    ScheduleModule.forRoot(),
+  ],
   controllers: [AppController],
-  providers: [AppService]
+  providers: [AppService],
 })
 export class AppModule {}
