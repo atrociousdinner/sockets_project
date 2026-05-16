@@ -3,6 +3,7 @@ import { Interval } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Auction, AuctionStatus } from 'src/auction/auction.entity';
 import { LessThanOrEqual, Repository } from 'typeorm';
+import { AuctionGateway } from './auction.gateway';
 
 @Injectable()
 export class AuctionSchedulerService {
@@ -10,6 +11,7 @@ export class AuctionSchedulerService {
 
   constructor(
     @InjectRepository(Auction) private auctionRepo: Repository<Auction>,
+    private auctionGateway: AuctionGateway,
   ) {}
 
   @Interval(1000)
@@ -24,6 +26,7 @@ export class AuctionSchedulerService {
     for (const auction of expiredAuctions) {
       auction.status = AuctionStatus.CLOSED;
       await this.auctionRepo.save(auction);
+      this.auctionGateway.handleAuctionClose(auction);
       this.logger.log(`Closed auction ${auction.auction_id}`);
     }
   }
