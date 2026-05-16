@@ -52,7 +52,10 @@ export class AuctionService {
 
   async start(auction_id: number) {
     const auction = await this.auctionRepo.findOne({
-      where: { auction_id },
+      where: {
+        auction_id: auction_id, 
+        status: AuctionStatus.DRAFT
+      },
     });
 
     if (!auction) {

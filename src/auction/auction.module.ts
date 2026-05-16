@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Auction } from './auction.entity';
 import { Bid } from 'src/bid/bid.entity';
 import { AuctionSchedulerService } from './auction-scheduler.service';
+import { AuctionGateway } from './auction.gateway';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Auction, Bid])],
   controllers: [AuctionController],
-  providers: [AuctionService, AuctionSchedulerService],
+  providers: [AuctionService, AuctionSchedulerService, AuctionGateway],
 })
 export class AuctionModule {}

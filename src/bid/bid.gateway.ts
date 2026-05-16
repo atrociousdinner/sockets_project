@@ -47,7 +47,7 @@ export class BidGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    client.data.userId = Number(userId);
+    client.data.userId = userId;
 
     console.log(`Socket ${client.id} linked to user ${userId}`);
   }
@@ -61,7 +61,7 @@ export class BidGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody('roomId') roomId: number,
     @ConnectedSocket() client: Socket,
   ) {
-    const userId = client.data.userId;
+    const userId: number = client.data.userId;
 
     try {
       const isAuthorized = await this.roomService.isUserInRoom(userId, roomId);
@@ -70,11 +70,11 @@ export class BidGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       client.join(String(roomId));
-      (client.to(String(roomId)).emit('userJoined'),
-        {
-          userId,
-          roomId,
-        });
+      client.to(String(roomId)).emit('userJoined', {
+        userId,
+        roomId,
+      });
+
 
       client.data.roomId = roomId;
 

@@ -21,6 +21,7 @@ export class AuctionSchedulerService {
         status: AuctionStatus.ACTIVE,
         endsAt: LessThanOrEqual(new Date()),
       },
+      relations: ['room']
     });
 
     for (const auction of expiredAuctions) {

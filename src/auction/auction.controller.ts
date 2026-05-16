@@ -14,4 +14,9 @@ export class AuctionController {
       body.room_id,
     );
   }
+
+  @Post('/start')
+  startAuction(@Body('auction_id') auction_id: number) {
+    return this.auctionService.start(auction_id);
+  }
 }
